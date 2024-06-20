@@ -1,0 +1,39 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>io.github.mattshoe.Pasty</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>Pasty</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="mattshoe81@gmail.com" url="https://www.linkedin.com/in/mattshoe81/">Matthew Shoemaker</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description><![CDATA[
+    Tools to automate ADB interaction. fdsafjdksalfjdkalsfjdklas;fjdkla;sjfdklsa;jfdklsa;
+  ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Extension points defined by the plugin.O
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Pasty" anchor="right" factoryClass="io.github.mattshoe.pasty.home.view.HomeWindowFactory"/>
+
+        <applicationService serviceInterface="io.github.mattshoe.pasty.service.ApplicationCoroutineScopeService"
+                            serviceImplementation="io.github.mattshoe.pasty.service.ApplicationCoroutineScopeServiceImpl"/>
+
+        <applicationService serviceInterface="io.github.mattshoe.pasty.device.DeviceMonitorService"
+                            serviceImplementation="io.github.mattshoe.pasty.device.DeviceMonitorServiceImpl"/>
+
+        <projectService serviceInterface="io.github.mattshoe.pasty.service.ProjectCoroutineScopeService"
+                serviceImplementation="io.github.mattshoe.pasty.service.ProjectCoroutineScopeServiceImpl"/>
+
+    </extensions>
+</idea-plugin>
