@@ -30,6 +30,7 @@ intellij {
 dependencies {
     implementation("org.jetbrains.compose.desktop:desktop-jvm:1.6.10")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
     implementation(compose.desktop.macos_arm64)
     implementation("com.google.dagger:dagger:2.51")
     kapt("com.google.dagger:dagger-compiler:2.51")
