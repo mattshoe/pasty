@@ -2,9 +2,11 @@ package io.github.mattshoe.pasty.di
 
 import dagger.BindsInstance
 import dagger.Component
-import io.github.mattshoe.pasty.device.DeviceMonitorServiceImpl
+import io.github.mattshoe.pasty.device.DeviceServiceImpl
+import io.github.mattshoe.pasty.device.di.DeviceModule
 import io.github.mattshoe.pasty.home.view.HomeWindowFactory
 import io.github.mattshoe.pasty.log.di.LoggerModule
+import io.github.mattshoe.pasty.terminal.di.TerminalModule
 import kotlinx.coroutines.CoroutineScope
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -12,22 +14,22 @@ import javax.inject.Singleton
 @Singleton
 @Component(
     modules = [
-        LoggerModule::class
+        LoggerModule::class,
+        DeviceModule::class,
+        TerminalModule::class
     ]
 )
 interface AppComponent {
     fun inject(window: HomeWindowFactory)
-    fun inject(service: DeviceMonitorServiceImpl)
+    fun inject(service: DeviceServiceImpl)
 
     @Component.Builder
     interface Builder {
         @BindsInstance
-        @ApplicationScope
-        fun applicationScope(coroutineScope: CoroutineScope): Builder
+        fun applicationScope(@ApplicationScope coroutineScope: CoroutineScope): Builder
 
         @BindsInstance
-        @ProjectScope
-        fun projectScope(coroutineScope: CoroutineScope): Builder
+        fun projectScope(@ProjectScope coroutineScope: CoroutineScope): Builder
 
         fun build(): AppComponent
     }

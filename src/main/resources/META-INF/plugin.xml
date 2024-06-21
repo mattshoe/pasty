@@ -29,8 +29,11 @@
         <applicationService serviceInterface="io.github.mattshoe.pasty.service.ApplicationCoroutineScopeService"
                             serviceImplementation="io.github.mattshoe.pasty.service.ApplicationCoroutineScopeServiceImpl"/>
 
-        <applicationService serviceInterface="io.github.mattshoe.pasty.device.DeviceMonitorService"
-                            serviceImplementation="io.github.mattshoe.pasty.device.DeviceMonitorServiceImpl"/>
+        <applicationService serviceInterface="io.github.mattshoe.pasty.device.DeviceService"
+                            serviceImplementation="io.github.mattshoe.pasty.device.DeviceServiceImpl"/>
+
+        <applicationService serviceInterface="io.github.mattshoe.pasty.service.SettingsService"
+                            serviceImplementation="io.github.mattshoe.pasty.service.SettingsServiceImpl"/>
 
         <projectService serviceInterface="io.github.mattshoe.pasty.service.ProjectCoroutineScopeService"
                 serviceImplementation="io.github.mattshoe.pasty.service.ProjectCoroutineScopeServiceImpl"/>

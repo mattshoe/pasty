@@ -1,12 +1,11 @@
 package io.github.mattshoe.pasty.di
 
 import com.intellij.openapi.components.service
-import com.intellij.openapi.components.serviceIfCreated
 import com.intellij.openapi.wm.ToolWindow
-import io.github.mattshoe.pasty.device.DeviceMonitorService
-import io.github.mattshoe.pasty.device.DeviceMonitorServiceImpl
+import io.github.mattshoe.pasty.device.DeviceService
 import io.github.mattshoe.pasty.service.ApplicationCoroutineScopeService
 import io.github.mattshoe.pasty.service.ProjectCoroutineScopeService
+import io.github.mattshoe.pasty.service.SettingsService
 
 object PastyApp {
     lateinit var dagger: AppComponent
@@ -21,21 +20,18 @@ object PastyApp {
             )
             .build()
 
-        if (!isDeviceMonitorRunning()) {
-            startDeviceMonitor()
-        }
-    }
-
-
-    private fun isDeviceMonitorRunning(): Boolean {
-        return serviceIfCreated<DeviceMonitorService>() != null
+        startDeviceMonitor()
+        createSettings()
     }
 
     private fun startDeviceMonitor() {
-        service<DeviceMonitorService>().apply {
-            dagger.inject(this as DeviceMonitorServiceImpl)
-            start()
+        service<DeviceService>().apply {
+            startMonitoringConnectedDevices()
         }
+    }
+
+    private fun createSettings() {
+        service<SettingsService>()
     }
 
 }

@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.intellij.util.io.awaitExit
+import io.github.mattshoe.pasty.device.Device
+import io.github.mattshoe.pasty.home.viewmodel.HomeUserIntent
 import io.github.mattshoe.pasty.home.viewmodel.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,11 +20,11 @@ import kotlinx.coroutines.withContext
 @Preview
 @Composable
 fun HomeWindowPreview() {
-    HomeWindow(HomeViewModel())
+    HomeWindow(null)
 }
 
 @Composable
-fun HomeWindow(viewModel: HomeViewModel) {
+fun HomeWindow(viewModel: HomeViewModel?) {
     var selectedDevice by remember { mutableStateOf("") }
     var textFieldValue by remember { mutableStateOf("") }
     var terminalOutput by remember { mutableStateOf("") }
@@ -30,7 +32,12 @@ fun HomeWindow(viewModel: HomeViewModel) {
 
     MaterialTheme(colors = darkColors()) {
         Column(modifier = Modifier.padding(16.dp).fillMaxSize()) {
-            DeviceDropdown(selectedDevice) { selectedDevice = it }
+            DeviceDropdown(viewModel!!, selectedDevice) {
+                selectedDevice = it.id
+                viewModel.handleUserIntent(
+                    HomeUserIntent.DeviceSelected(it)
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             TextField(
                 value = textFieldValue,
@@ -55,8 +62,8 @@ fun HomeWindow(viewModel: HomeViewModel) {
 }
 
 @Composable
-fun DeviceDropdown(selectedDevice: String, onDeviceSelected: (String) -> Unit) {
-    val devices = listOf("Device 1", "Device 2", "Device 3")
+fun DeviceDropdown(viewModel: HomeViewModel, selectedDevice: String, onDeviceSelected: (Device) -> Unit) {
+    val devices by viewModel.connectedDevices.collectAsState(emptyList())
     var expanded by remember { mutableStateOf(false) }
 
     Box {
@@ -72,7 +79,7 @@ fun DeviceDropdown(selectedDevice: String, onDeviceSelected: (String) -> Unit) {
                         onDeviceSelected(device)
                         expanded = false
                     }) {
-                        Text(device)
+                        Text(device.id)
                     }
                 }
             }

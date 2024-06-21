@@ -15,7 +15,7 @@ class PastyLoggerImpl @Inject constructor(): PastyLogger {
         log(Level.INFO, message)
     }
 
-    override fun debug(message: CharSequence) {
+    override fun debug(message: Any) {
         log(Level.DEBUG, message)
     }
 
@@ -23,18 +23,26 @@ class PastyLoggerImpl @Inject constructor(): PastyLogger {
         log(Level.WARNING, message)
     }
 
+    override fun error(error: Throwable) {
+        log(Level.ERROR, error.toString())
+    }
+
     override fun error(message: CharSequence, error: Throwable?) {
         log(Level.ERROR, "$message\n\t$error")
     }
 
-    private fun log(level: Level, message: CharSequence) {
+    private fun log(level: Level, message: Any) {
         with ("PASTY_LOG::${level.name}:: $message") {
             println(this)
-            when (level) {
-                Level.INFO -> thisLogger().info(this)
-                Level.DEBUG -> thisLogger().debug(this)
-                Level.WARNING -> thisLogger().warn(this)
-                Level.ERROR -> thisLogger().error(this)
+            try {
+                when (level) {
+                    Level.INFO -> thisLogger().info(this)
+                    Level.DEBUG -> thisLogger().debug(this)
+                    Level.WARNING -> thisLogger().warn(this)
+                    Level.ERROR -> thisLogger().error(this)
+                }
+            } catch (e: Throwable) {
+                println("Logger error: $e")
             }
         }
     }
