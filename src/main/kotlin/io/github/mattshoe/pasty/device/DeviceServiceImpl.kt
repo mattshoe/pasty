@@ -3,30 +3,61 @@ package io.github.mattshoe.pasty.device
 import com.intellij.openapi.components.Service
 import io.github.mattshoe.pasty.di.PastyApp
 import io.github.mattshoe.pasty.log.PastyLogger
+import io.github.mattshoe.pasty.service.AbstractService
 import io.github.mattshoe.pasty.terminal.Terminal
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import kotlin.math.log
 import kotlin.time.Duration.Companion.seconds
 
 @Service
-class DeviceServiceImpl: DeviceService {
+class DeviceServiceImpl: AbstractService(), DeviceService {
 
     companion object {
         private const val INTERVAL_SECONDS = 3
+        private val CONNECTED_DEVICES_EMPTY_STATE = listOf(Device.NONE)
     }
+
+    private var previousDevices = CONNECTED_DEVICES_EMPTY_STATE
+    private val _connectedDevices = MutableStateFlow(CONNECTED_DEVICES_EMPTY_STATE)
+    private val _selectedDevice = MutableStateFlow(Device.NONE)
+    private val hasStarted = AtomicBoolean(false)
+    private val id = UUID.randomUUID()
 
     init {
         PastyApp.dagger.inject(this)
-    }
 
-    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _connectedDevices = MutableStateFlow<List<Device>>(emptyList())
-    private val _selectedDevice = MutableSharedFlow<Device>(replay = 1)
-    private val hasStarted = AtomicBoolean(false)
-    private val id = UUID.randomUUID()
+        _selectedDevice
+            .onEach {
+                if (it == Device.NONE)
+                    logger.warning("No device selected!")
+                else
+                    logger.info("New device selected: ${it.id}")
+            }.launchIn(coroutineScope)
+
+        _connectedDevices
+            .onEach {
+                if (it == CONNECTED_DEVICES_EMPTY_STATE)
+                    logger.warning("No devices attached!")
+                else
+                    deviceDiff(it).apply {
+                        if (added.isNotEmpty()) {
+                            added.forEach {
+                                logger.info("New device attached: ${it.id}")
+                            }
+                        }
+                        if (removed.isNotEmpty()) {
+                            removed.forEach {
+                                logger.info("Device disconnected: ${it.id}")
+                            }
+                        }
+                    }
+                previousDevices = it
+            }
+    }
 
     @Inject
     lateinit var logger: PastyLogger
@@ -34,15 +65,13 @@ class DeviceServiceImpl: DeviceService {
     @Inject
     lateinit var terminal: Terminal
 
-    override val selectedDevice = _selectedDevice.distinctUntilChanged()
+    override val selectedDevice = _selectedDevice
     override val connectedDevices = _connectedDevices
 
     override fun startMonitoringConnectedDevices() {
-        logger.debug("START WAS INVOKED!!!!!!")
         if (!hasStarted.getAndSet(true)) {
             coroutineScope.launch {
                 while (true) {
-                    logger.debug("Device Monitor: $id")
                     try {
                         listDevices()
                     } catch (e: Throwable) {
@@ -57,18 +86,19 @@ class DeviceServiceImpl: DeviceService {
 
     override fun setSelectedDevice(device: Device) {
         coroutineScope.launch {
-            _selectedDevice.emit(device)
+            if (_connectedDevices.value.contains(device)) {
+                _selectedDevice.emit(device)
+            }
         }
     }
 
     private suspend fun listDevices() {
-        terminal.executeCommand("adb", "devices").let {
-            logger.debug(it.stdout)
-            parseDevices(it.stdout)
-            if (it.stderr.isNotEmpty()) {
-                logger.error(it.stderr)
-            }
-        }
+        parseDevices(
+            terminal.executeCommand(
+                "adb", "devices",
+                logToUser = false
+            ).stdout
+        )
     }
 
     private fun parseDevices(stdout: String) {
@@ -82,17 +112,37 @@ class DeviceServiceImpl: DeviceService {
                 lines.forEach { deviceOutput ->
                     deviceOutput.split("\t").let {
                         val device = Device(it[0])
-                        logger.debug(device)
                         devices.add(device)
                     }
                 }
             }
         }
 
-        _connectedDevices.update { devices }
+        updateDevicesState(devices)
     }
 
-    override fun dispose() {
-        coroutineScope.cancel()
+    private fun updateDevicesState(devices: List<Device>) {
+        if (devices.isEmpty()) {
+            setSelectedDevice(Device.NONE)
+            _connectedDevices.update { CONNECTED_DEVICES_EMPTY_STATE }
+        }
+        else {
+            _connectedDevices.update { devices }
+            if (devices.size == 1 || !devices.contains(_selectedDevice.value)) {
+                setSelectedDevice(devices.first())
+            }
+        }
     }
+
+    private fun deviceDiff(newDevices: List<Device>): DeviceDiff {
+        return DeviceDiff(
+            newDevices.filter { it !in previousDevices },
+            previousDevices.filter { it !in newDevices }
+        )
+    }
+
+    private data class DeviceDiff(
+        val added: List<Device>,
+        val removed: List<Device>
+    )
 }

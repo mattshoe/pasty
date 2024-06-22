@@ -61,3 +61,11 @@ tasks {
         token.set(System.getenv("PUBLISH_TOKEN"))
     }
 }
+
+
+tasks.named("compileKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask::class.java) {
+//    if (this.name.contains("debug", true))
+    compilerOptions {
+        freeCompilerArgs.add("-Xdebug")
+    }
+}

@@ -26,17 +26,30 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Pasty" anchor="right" factoryClass="io.github.mattshoe.pasty.home.view.HomeWindowFactory"/>
 
+        <applicationConfigurable
+            parentId="tools"
+            instance="io.github.mattshoe.pasty.settings.PastySettingsConfigurable"
+            id="io.github.mattshoe.pasty.settings.PastySettingsConfigurable"
+            displayName="Pasty Settings"/>
+
+        <applicationService serviceInterface="io.github.mattshoe.pasty.settings.SettingsService"
+                            serviceImplementation="io.github.mattshoe.pasty.settings.SettingsServiceImpl"
+                            configurationSchemaKey="io.github.mattshoe.pasty.settings.SettingsServiceImpl"/>
+
         <applicationService serviceInterface="io.github.mattshoe.pasty.service.ApplicationCoroutineScopeService"
                             serviceImplementation="io.github.mattshoe.pasty.service.ApplicationCoroutineScopeServiceImpl"/>
 
         <applicationService serviceInterface="io.github.mattshoe.pasty.device.DeviceService"
                             serviceImplementation="io.github.mattshoe.pasty.device.DeviceServiceImpl"/>
 
-        <applicationService serviceInterface="io.github.mattshoe.pasty.service.SettingsService"
-                            serviceImplementation="io.github.mattshoe.pasty.service.SettingsServiceImpl"/>
+        <applicationService serviceInterface="io.github.mattshoe.pasty.bus.MessageBusService"
+                            serviceImplementation="io.github.mattshoe.pasty.bus.MessageBusServiceImpl"/>
 
         <projectService serviceInterface="io.github.mattshoe.pasty.service.ProjectCoroutineScopeService"
                 serviceImplementation="io.github.mattshoe.pasty.service.ProjectCoroutineScopeServiceImpl"/>
+
+        <projectService serviceInterface="io.github.mattshoe.pasty.log.ConsoleService"
+                        serviceImplementation="io.github.mattshoe.pasty.log.ConsoleServiceImpl"/>
 
     </extensions>
 </idea-plugin>
