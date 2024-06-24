@@ -30,7 +30,7 @@ class ConsoleServiceImpl(
     lateinit var logger: PastyLogger
 
     private val console = ConsoleViewImpl(project, true)
-    private val descriptor = RunContentDescriptor(console, null, console.component, "PASTY")
+    private val descriptor = RunContentDescriptor(console, null, console.component, "Pasty Console")
 
     init {
         RunContentManager.getInstance(project)

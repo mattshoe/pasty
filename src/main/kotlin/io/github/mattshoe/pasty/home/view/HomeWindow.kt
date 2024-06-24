@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -52,33 +53,10 @@ fun HomeWindow(viewModel: HomeViewModel) {
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Row {
-                TextField(
-                    value = textFieldValue,
-                    onValueChange = { textFieldValue = it },
-                    label = { Text("Text to paste") },
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done)
-                )
-                Button(
-                    onClick = {
-                        viewModel.handleUserIntent(HomeUserIntent.Paste(textFieldValue))
-                    },
-                    content = {
-                        Text("Paste")
-                    }
-                )
-            }
+            TextInputWithPasteButton(viewModel)
             Spacer(modifier = Modifier.height(16.dp))
-            CommandButtons(
-                onExecute = { command ->
-                    scope.launch {
-                        val output = executeAdbCommand(command)
-                        terminalOutput += "$command:\n$output\n"
-                    }
-                }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            TerminalOutput()
+            CommandButtons(viewModel)
+            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }
@@ -110,86 +88,70 @@ fun DeviceDropdown(viewModel: HomeViewModel, selectedDevice: Flow<Device>, onDev
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CommandButtons(onExecute: (String) -> Unit) {
-    FlowRow(
-        modifier = Modifier.padding(8.dp)
+@Preview
+fun TextInputWithPasteButton(viewModel: HomeViewModel) {
+    var textState by remember { mutableStateOf(TextFieldValue("")) }
+
+    Box(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Button(onClick = { onExecute("adb devices") }) {
-            Text("List Devices")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = { onExecute("adb shell settings put global http_proxy 127.0.0.1:8080") }) {
-            Text("Set Proxy")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = { onExecute("adb shell input text 'Hello'") }) {
-            Text("Paste Text")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = { onExecute("adb shell input text 'Hello'") }) {
-            Text("Paste Text")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = { onExecute("adb shell input text 'Hello'") }) {
-            Text("Paste Text")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = { onExecute("adb shell input text 'Hello'") }) {
-            Text("Paste Text")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = { onExecute("adb shell input text 'Hello'") }) {
-            Text("Paste Text")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = { onExecute("adb shell input text 'Hello'") }) {
-            Text("Paste Text")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = { onExecute("adb shell input text 'Hello'") }) {
-            Text("Paste Text")
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = { onExecute("adb shell input text 'Hello'") }) {
-            Text("Paste Text")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
+            TextField(
+                value = textState,
+                onValueChange = { textState = it },
+                placeholder = {
+                    Text(
+                        text = "Text to paste",
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            color = Color.Gray
+                        )
+                    )
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 40.dp)
+                    .verticalScroll(rememberScrollState()),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontFamily = FontFamily.Monospace
+                )
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Button(
+                onClick = {
+                    println("Pasting text: ${textState.text}")
+                    viewModel.handleUserIntent(
+                        HomeUserIntent.Paste(textState.text)
+                    )
+                },
+                modifier = Modifier.align(Alignment.Top)
+            ) {
+                Text("Paste")
+            }
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TerminalOutput() {
-//    var text = remember { mutableStateOf("") }
-//    var textState by remember { mutableStateOf(TextFieldValue("")) }
-//    val verticalScrollState = rememberScrollState()
-//    val output by service<MessageBusService>().stream.collectAsState(Message("derp"))
-//    // Define the line height and calculate the box height
-    val lineHeight = 10.dp
-    val boxHeight = lineHeight * 30
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(boxHeight)
-            .background(Color.Black)
-            .padding(8.dp)
+fun CommandButtons(viewModel: HomeViewModel) {
+    FlowRow(
+        modifier = Modifier.padding(8.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+        Button(
+            onClick = {
+                viewModel.handleUserIntent(
+                    HomeUserIntent.SetProxy
+                )
+            }
         ) {
-//            BasicTextField(
-//                value = text.value.plus("\n$output"),
-//                onValueChange = { textState = TextFieldValue(it) },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .background(Color.Black),
-//                textStyle = androidx.compose.ui.text.TextStyle(
-//                    color = Color.Green,
-//                    fontSize = 10.sp,
-//                    fontFamily = FontFamily.Monospace
-//                )
-//            )
+            Text("Set Proxy")
         }
     }
 }

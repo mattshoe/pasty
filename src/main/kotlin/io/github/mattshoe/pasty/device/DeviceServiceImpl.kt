@@ -1,9 +1,11 @@
 package io.github.mattshoe.pasty.device
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import io.github.mattshoe.pasty.di.PastyApp
 import io.github.mattshoe.pasty.log.PastyLogger
 import io.github.mattshoe.pasty.service.AbstractService
+import io.github.mattshoe.pasty.settings.SettingsService
 import io.github.mattshoe.pasty.terminal.Terminal
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -17,7 +19,6 @@ import kotlin.time.Duration.Companion.seconds
 class DeviceServiceImpl: AbstractService(), DeviceService {
 
     companion object {
-        private const val INTERVAL_SECONDS = 3
         private val CONNECTED_DEVICES_EMPTY_STATE = listOf(Device.NONE)
     }
 
@@ -25,7 +26,8 @@ class DeviceServiceImpl: AbstractService(), DeviceService {
     private val _connectedDevices = MutableStateFlow(CONNECTED_DEVICES_EMPTY_STATE)
     private val _selectedDevice = MutableStateFlow(Device.NONE)
     private val hasStarted = AtomicBoolean(false)
-    private val id = UUID.randomUUID()
+    private val settingsService: SettingsService
+        get() = service()
 
     init {
         PastyApp.dagger.inject(this)
@@ -70,6 +72,7 @@ class DeviceServiceImpl: AbstractService(), DeviceService {
 
     override fun startMonitoringConnectedDevices() {
         if (!hasStarted.getAndSet(true)) {
+            println("Device Poll Interval: ${settingsService.pollInterval}")
             coroutineScope.launch {
                 while (true) {
                     try {
@@ -78,7 +81,7 @@ class DeviceServiceImpl: AbstractService(), DeviceService {
                         logger.error(e)
                     }
 
-                    delay(INTERVAL_SECONDS.seconds)
+                    delay(settingsService.pollInterval.seconds)
                 }
             }
         }

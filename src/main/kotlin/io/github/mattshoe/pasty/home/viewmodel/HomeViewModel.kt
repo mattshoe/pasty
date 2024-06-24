@@ -36,6 +36,7 @@ class HomeViewModel @Inject constructor(
         when (userIntent) {
             is HomeUserIntent.DeviceSelected -> handleDeviceSelected(userIntent.device)
             is HomeUserIntent.Paste -> handlePasteText(userIntent.text)
+            is HomeUserIntent.SetProxy -> handleProxyReset()
         }
     }
 
@@ -47,6 +48,16 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 adbRepository.paste(text)
+            } catch (e: Throwable) {
+                logger.error(e)
+            }
+        }
+    }
+
+    private fun handleProxyReset() {
+        viewModelScope.launch {
+            try {
+                adbRepository.setProxy()
             } catch (e: Throwable) {
                 logger.error(e)
             }

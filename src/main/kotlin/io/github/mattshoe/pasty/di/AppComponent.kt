@@ -33,7 +33,7 @@ interface AppComponent {
     @Component.Builder
     interface Builder {
         @BindsInstance
-        fun settings(@ApplicationScope settings: SettingsService): Builder
+        fun settings(settings: SettingsService): Builder
 
         @BindsInstance
         fun applicationScope(@ApplicationScope coroutineScope: CoroutineScope): Builder
